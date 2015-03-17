@@ -4,19 +4,25 @@ require "net/http"
 require "tmpdir"
 require "spoon"
 
+
 module Libreconv
 
-  def self.convert(source, target, soffice_command = nil)
-    Converter.new(source, target, soffice_command).convert
+  def self.convert(source, target, to = "pdf", soffice_command = nil)
+    Converter.new(source, target, to, soffice_command).convert
+  end
+
+  def self.as_html(source, soffice_command = nil)
+    Converter.new(source, '', 'html', soffice_command).as_html
   end
 
   class Converter
     attr_accessor :soffice_command
 
-    def initialize(source, target, soffice_command = nil)
+    def initialize(source, target, to, soffice_command = nil)
       @source = source
       @target = target
-      @target_path = Dir.tmpdir
+      @to     = to
+      @target_path = Dir.tmpdir + "/" + SecureRandom.hex
       @soffice_command = soffice_command
       determine_soffice_command
       check_source_type
@@ -27,16 +33,25 @@ module Libreconv
     end
 
     def convert
-      orig_stdout = $stdout.clone
-      $stdout.reopen File.new('/dev/null', 'w')
-      pid = Spoon.spawnp(@soffice_command, "--headless", "--convert-to", "pdf", @source, "--outdir", @target_path)
-      Process.waitpid(pid)
-      $stdout.reopen orig_stdout
-      target_tmp_file = "#{@target_path}/#{File.basename(@source, ".*")}.pdf"
+      target_tmp_file = _convert
       FileUtils.cp target_tmp_file, @target
     end
 
+    def as_html
+      target_tmp_file = _convert
+      File.open(target_tmp_file,'rb')
+    end
+
     private
+
+    def _convert
+      orig_stdout = $stdout.clone
+      $stdout.reopen File.new('/dev/null', 'w')
+      pid = Spoon.spawnp(@soffice_command, "--headless", "--convert-to", @to, @source, "--outdir", @target_path)
+      Process.waitpid(pid)
+      $stdout.reopen orig_stdout
+      "#{@target_path}/#{File.basename(@source, ".*")}.#{@to}"
+    end
 
     def determine_soffice_command
       unless @soffice_command

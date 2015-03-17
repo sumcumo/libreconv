@@ -23,53 +23,53 @@ describe Libreconv do
   describe Libreconv::Converter do
     describe "#new" do
       it "should raise error if soffice command does not exists" do
-        expect { Libreconv::Converter.new(@doc_file, "/target", "/Whatever/soffice") }.to raise_error(IOError)
+        expect { Libreconv::Converter.new(@doc_file, "/target", "pdf", "/Whatever/soffice") }.to raise_error(IOError)
       end
 
       it "should raise error if source does not exists" do
-        expect { Libreconv::Converter.new(file_path("nonsense.txt"), "/target") }.to raise_error(IOError)
+        expect { Libreconv::Converter.new(file_path("nonsense.txt"), "pdf", "/target") }.to raise_error(IOError)
       end
     end
 
     describe "#convert" do
       it "should convert a docx do pdf specifying target_file" do
         target_file = "#{@target_path}/#{File.basename(@doc_file, ".doc")}.pdf"
-        converter = Libreconv::Converter.new(@doc_file, target_file)
+        converter = Libreconv::Converter.new(@doc_file, target_file, "pdf")
         converter.convert
         expect(File.file?(target_file)).to eq true
       end
 
       it "should convert a doc to pdf" do
         target_file = "#{@target_path}/#{File.basename(@doc_file, ".doc")}.pdf"
-        converter = Libreconv::Converter.new(@doc_file, @target_path)
+        converter = Libreconv::Converter.new(@doc_file, @target_path, "pdf")
         converter.convert
         expect(File.file?(target_file)).to eq true
       end
 
       it "should convert a docx to pdf" do
         target_file = "#{@target_path}/#{File.basename(@docx_file, ".docx")}.pdf"
-        converter = Libreconv::Converter.new(@docx_file, @target_path)
+        converter = Libreconv::Converter.new(@docx_file, @target_path, "pdf")
         converter.convert
         expect(File.file?(target_file)).to eq true
       end
 
       it "should convert a pptx to pdf" do
         target_file = "#{@target_path}/#{File.basename(@pptx_file, ".pptx")}.pdf"
-        converter = Libreconv::Converter.new(@pptx_file, @target_path)
+        converter = Libreconv::Converter.new(@pptx_file, @target_path, "pdf")
         converter.convert
         expect(File.file?(target_file)).to eq true
       end
 
       it "should convert a ppt to pdf" do
         target_file = "#{@target_path}/#{File.basename(@ppt_file, ".ppt")}.pdf"
-        converter = Libreconv::Converter.new(@ppt_file, @target_path)
+        converter = Libreconv::Converter.new(@ppt_file, @target_path, "pdf")
         converter.convert
         expect(File.file?(target_file)).to eq true
       end
 
       it "should convert a docx to pdf specifying an URL as source" do
         target_file = "#{@target_path}/docx.pdf"
-        converter = Libreconv::Converter.new(@url, @target_path)
+        converter = Libreconv::Converter.new(@url, @target_path, "pdf")
         converter.convert
         expect(File.file?(target_file)).to eq true
       end
@@ -78,13 +78,13 @@ describe Libreconv do
     describe "#soffice_command" do
       it "should return the user specified command path" do
         cmd = file_path("soffice") # just faking that the command is present here
-        converter = Libreconv::Converter.new(@doc_file, "/target", cmd)
+        converter = Libreconv::Converter.new(@doc_file, "/target", "pdf", cmd)
         expect(converter.soffice_command).to eq cmd
       end
 
       it "should return the command found in path" do
         cmd = `which soffice`.strip
-        converter = Libreconv::Converter.new(@doc_file, "/target")
+        converter = Libreconv::Converter.new(@doc_file, "/target", "pdf")
         expect(converter.soffice_command).to eq cmd
       end
     end
@@ -92,7 +92,7 @@ describe Libreconv do
     describe ".convert" do
       it "should convert a file to pdf" do
         target_file = "#{@target_path}/#{File.basename(@doc_file, ".doc")}.pdf"
-        Libreconv.convert(@doc_file, @target_path)
+        Libreconv.convert(@doc_file, @target_path, "pdf")
         expect(File.file?(target_file)).to eq true
       end
     end
